@@ -6,7 +6,7 @@ tmp_dir = "tmp"
   bin = "tmp/main.exe"
   cmd = "powershell -Command \"New-Item -ItemType Directory -Path tmp -Force\" && go build -o tmp/main.exe main.go"
   include = ["*.go"]
-  exclude = ["tmp", "vendor"]
+  exclude = ["tmp", "vendor" , ".git"]
 
 [color]
   main = "yellow"
