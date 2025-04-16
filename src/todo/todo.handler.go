@@ -1,29 +1,22 @@
 package todo
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
-type HandlerAttribute struct {
-	DB *gorm.DB
-}
+func getAll(ctx *fiber.Ctx) error {
 
-func (ha HandlerAttribute) getAll(ctx *fiber.Ctx) error {
-	var todos []TodoModel
-	result := ha.DB.Find(&todos)
-	if result.Error != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
+	todos, err := Find()
+	if err != nil {
+		return ctx.Status(err.Code).JSON(
 			fiber.Map{
-				"message": "Failed to get todos",
+				"message": err.Error(),
 			})
 	}
 
 	return ctx.JSON(fiber.Map{"message": "Success", "data": todos})
 }
-func (ha HandlerAttribute) single(ctx *fiber.Ctx) error {
+func single(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
@@ -31,19 +24,12 @@ func (ha HandlerAttribute) single(ctx *fiber.Ctx) error {
 				"message": "Invalid user id",
 			})
 	}
-	var todoData TodoModel
-	result := ha.DB.First(&todoData, uint(id))
-	if result.Error != nil {
-		fmt.Println(result.Error.Error())
-		if result.Error == gorm.ErrRecordNotFound {
-			return ctx.Status(fiber.StatusNotFound).JSON(
-				fiber.Map{
-					"message": "Record not found",
-				})
-		}
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
+
+	todoData, err2 := findById(uint(id))
+	if err2 != nil {
+		return ctx.Status(err2.Code).JSON(
 			fiber.Map{
-				"message": result.Error.Error(),
+				"message": err2.Error(),
 			})
 	}
 
@@ -52,7 +38,7 @@ func (ha HandlerAttribute) single(ctx *fiber.Ctx) error {
 		"data":    todoData,
 	})
 }
-func (ha HandlerAttribute) create(ctx *fiber.Ctx) error {
+func createTodo(ctx *fiber.Ctx) error {
 
 	var todoBody TodoModel
 
@@ -71,24 +57,23 @@ func (ha HandlerAttribute) create(ctx *fiber.Ctx) error {
 				"message": "Title is required",
 			})
 	}
-
 	todoData := TodoModel{
 		Title:     todoBody.Title,
 		Completed: false,
 	}
 
-	result := ha.DB.Create(&todoData)
+	newTodData, err2 := create(todoData)
 
-	if result.Error != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
+	if err2 != nil {
+		return ctx.Status(err2.Code).JSON(
 			fiber.Map{
-				"message": "Failed to create todo",
+				"message": err2.Error(),
 			})
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Success", "data": todoData})
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Success", "data": newTodData})
 }
-func (ha HandlerAttribute) update(ctx *fiber.Ctx) error {
+func updateTodo(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
@@ -98,10 +83,9 @@ func (ha HandlerAttribute) update(ctx *fiber.Ctx) error {
 	}
 
 	var todoBody TodoModel
+	err2 := ctx.BodyParser(&todoBody)
 
-	ctx.BodyParser(&todoBody)
-
-	if err != nil {
+	if err2 != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
 				"message": "Failed to parse body",
@@ -120,20 +104,17 @@ func (ha HandlerAttribute) update(ctx *fiber.Ctx) error {
 		Completed: todoBody.Completed,
 	}
 
-	result := ha.DB.Model(&TodoModel{}).Where("id = ?", id).Updates(todoData)
-	if result.Error != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(
+	todo, err3 := update(uint(id), todoData)
+	if err3 != nil {
+		return ctx.Status(err3.Code).JSON(
 			fiber.Map{
-				"message": "Failed to update todo",
+				"message": err3.Error(),
 			})
 	}
 
-	var findTodo TodoModel
-	ha.DB.First(&findTodo, id)
-
-	return ctx.Status(fiber.StatusAccepted).JSON(fiber.Map{"message": "Success", "data": findTodo})
+	return ctx.Status(fiber.StatusAccepted).JSON(fiber.Map{"message": "Success", "data": todo})
 }
-func (ha HandlerAttribute) remove(ctx *fiber.Ctx) error {
+func removeTodo(ctx *fiber.Ctx) error {
 
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
@@ -143,7 +124,13 @@ func (ha HandlerAttribute) remove(ctx *fiber.Ctx) error {
 			})
 	}
 
-	ha.DB.Delete(&TodoModel{}, uint(id))
+	err2 := remove(uint(id))
+	if err2 != nil {
+		return ctx.Status(err2.Code).JSON(
+			fiber.Map{
+				"message": err2.Error(),
+			})
+	}
 
 	return ctx.Status(fiber.StatusNoContent).JSON(
 		fiber.Map{
