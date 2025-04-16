@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/CodeMonkMI/fiber-todo/src/auth"
 	"github.com/CodeMonkMI/fiber-todo/src/database"
 	"github.com/CodeMonkMI/fiber-todo/src/todo"
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +17,8 @@ func main() {
 	app.Use(logger.New())
 
 	app.Route("/todo", todo.TodoHandlers, "todo")
+	app.Route("/auth", auth.AuthHandlers, "todo")
 
 	app.Listen(":3000")
+	
 }
