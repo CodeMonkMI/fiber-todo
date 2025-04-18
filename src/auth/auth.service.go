@@ -21,7 +21,7 @@ func findById(id uint) (UserModel, *fiber.Error) {
 	}
 	return userData, nil
 }
-func findByEmail(email string) (UserModel, *fiber.Error) {
+func FindByEmail(email string) (UserModel, *fiber.Error) {
 
 	var userData UserModel
 
@@ -51,7 +51,7 @@ func findByUsername(username string) (UserModel, *fiber.Error) {
 
 func loginUser(email string, pwd string) (string, *fiber.Error) {
 
-	foundUser, findEmailErr := findByEmail(email)
+	foundUser, findEmailErr := FindByEmail(email)
 
 	errorMsg := "Email or password is incorrect!"
 
@@ -106,7 +106,7 @@ func emailAndUserUniqueValidation(email string, username string) []string {
 
 	var errors []string
 
-	_, findEmailErr := findByEmail(email)
+	_, findEmailErr := FindByEmail(email)
 
 	if findEmailErr == nil || findEmailErr.Code != 404 {
 		errors = append(errors, "Email is already exist!")

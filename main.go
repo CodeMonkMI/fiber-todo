@@ -20,5 +20,5 @@ func main() {
 	app.Route("/auth", auth.AuthHandlers, "todo")
 
 	app.Listen(":3000")
-	
+
 }
