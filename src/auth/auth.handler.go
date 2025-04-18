@@ -44,7 +44,7 @@ func login(ctx *fiber.Ctx) error {
 			})
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Success", "data": jwtToken})
+	return ctx.Status(fiber.StatusAccepted).JSON(fiber.Map{"token": jwtToken})
 }
 
 func register(ctx *fiber.Ctx) error {
@@ -100,5 +100,9 @@ func register(ctx *fiber.Ctx) error {
 				"message": err2.Error(),
 			})
 	}
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Registration successfully!", "data": usr})
+	return ctx.Status(fiber.StatusCreated).JSON(RegisterResponse{
+		Username: usr.Username,
+		Email:    usr.Email,
+		FullName: usr.FullName,
+	})
 }

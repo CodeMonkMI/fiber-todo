@@ -14,7 +14,7 @@ func getAll(ctx *fiber.Ctx) error {
 			})
 	}
 
-	return ctx.JSON(fiber.Map{"message": "Success", "data": todos})
+	return ctx.JSON(todos)
 }
 func single(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
@@ -33,10 +33,7 @@ func single(ctx *fiber.Ctx) error {
 			})
 	}
 
-	return ctx.JSON(fiber.Map{
-		"message": "Success",
-		"data":    todoData,
-	})
+	return ctx.JSON(todoData)
 }
 func createTodo(ctx *fiber.Ctx) error {
 
@@ -71,7 +68,7 @@ func createTodo(ctx *fiber.Ctx) error {
 			})
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"message": "Success", "data": newTodData})
+	return ctx.Status(fiber.StatusCreated).JSON(newTodData)
 }
 func updateTodo(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
@@ -112,7 +109,7 @@ func updateTodo(ctx *fiber.Ctx) error {
 			})
 	}
 
-	return ctx.Status(fiber.StatusAccepted).JSON(fiber.Map{"message": "Success", "data": todo})
+	return ctx.Status(fiber.StatusAccepted).JSON(todo)
 }
 func removeTodo(ctx *fiber.Ctx) error {
 

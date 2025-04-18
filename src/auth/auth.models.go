@@ -17,3 +17,8 @@ type UserModel struct {
 	Email    string `json:"email" gorm:"unique"`
 	FullName string `json:"fullname"`
 }
+type RegisterResponse struct {
+	Username string `json:"username" gorm:"unique"`
+	Email    string `json:"email" gorm:"unique"`
+	FullName string `json:"fullname"`
+}
