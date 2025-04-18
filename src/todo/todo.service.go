@@ -5,10 +5,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func Find() ([]TodoModel, *fiber.Error) {
+func Find(id uint) ([]TodoModel, *fiber.Error) {
 
 	var todos []TodoModel
-	db.Find(&todos)
+	db.Where("created_by = ?", id).Find(&todos)
 
 	return todos, nil
 }
@@ -23,6 +23,7 @@ func findById(id uint) (TodoModel, *fiber.Error) {
 		}
 		return TodoModel{}, fiber.NewError(fiber.StatusInternalServerError, result.Error.Error())
 	}
+
 	return todoData, nil
 }
 

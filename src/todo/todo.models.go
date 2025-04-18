@@ -13,4 +13,5 @@ type TodoModel struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 	Title     string         `json:"title"`
 	Completed bool           `json:"completed"`
+	CreatedBy uint           `json:"created_by"`
 }

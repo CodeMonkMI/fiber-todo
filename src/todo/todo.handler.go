@@ -1,12 +1,13 @@
 package todo
 
 import (
+	"github.com/CodeMonkMI/fiber-todo/src/auth"
 	"github.com/gofiber/fiber/v2"
 )
 
 func getAll(ctx *fiber.Ctx) error {
-
-	todos, err := Find()
+	user := ctx.Locals("user").(auth.UserModel)
+	todos, err := Find(user.ID)
 	if err != nil {
 		return ctx.Status(err.Code).JSON(
 			fiber.Map{
@@ -33,6 +34,16 @@ func single(ctx *fiber.Ctx) error {
 			})
 	}
 
+	user := ctx.Locals("user").(auth.UserModel)
+	if todoData.CreatedBy != user.ID {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(
+			fiber.Map{
+				"message": "You are not authorized!",
+				"todo":    todoData,
+				"user":    user,
+			})
+
+	}
 	return ctx.JSON(todoData)
 }
 func createTodo(ctx *fiber.Ctx) error {
@@ -40,7 +51,6 @@ func createTodo(ctx *fiber.Ctx) error {
 	var todoBody TodoModel
 
 	err := ctx.BodyParser(&todoBody)
-
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
@@ -54,9 +64,11 @@ func createTodo(ctx *fiber.Ctx) error {
 				"message": "Title is required",
 			})
 	}
+	user := ctx.Locals("user").(auth.UserModel)
 	todoData := TodoModel{
 		Title:     todoBody.Title,
 		Completed: false,
+		CreatedBy: user.ID,
 	}
 
 	newTodData, err2 := create(todoData)
@@ -94,6 +106,23 @@ func updateTodo(ctx *fiber.Ctx) error {
 			fiber.Map{
 				"message": "Title is required",
 			})
+	}
+
+	todoData1, err4 := findById(uint(id))
+	if err4 != nil {
+		return ctx.Status(err4.Code).JSON(
+			fiber.Map{
+				"message": err2.Error(),
+			})
+	}
+
+	user := ctx.Locals("user").(auth.UserModel)
+	if todoData1.CreatedBy != user.ID {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(
+			fiber.Map{
+				"message": "You are not authorized!",
+			})
+
 	}
 
 	todoData := TodoModel{
