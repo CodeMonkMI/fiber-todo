@@ -5,28 +5,13 @@ import (
 )
 
 func login(ctx *fiber.Ctx) error {
-	var userBody UserModel
 
-	err := ctx.BodyParser(&userBody)
+	var authBody LoginRequest
 
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Failed to parse body",
-			})
-	}
+	ctx.BodyParser(&authBody)
 
-	var errors []string
+	if errors := loginValidator(authBody); errors != nil {
 
-	if userBody.Email == "" {
-		errors = append(errors, "Email is required")
-
-	}
-	if userBody.Password == "" {
-		errors = append(errors, "Password is required")
-	}
-
-	if len(errors) > 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
 				"message": "Validation failed",
@@ -34,13 +19,12 @@ func login(ctx *fiber.Ctx) error {
 			})
 	}
 
-	jwtToken, err2 := loginUser(userBody.Email, userBody.Password)
+	jwtToken, err := loginUser(authBody.Email, authBody.Password)
 
-	if err2 != nil {
-
-		return ctx.Status(err2.Code).JSON(
+	if err != nil {
+		return ctx.Status(err.Code).JSON(
 			fiber.Map{
-				"message": err2.Error(),
+				"message": err.Error(),
 			})
 	}
 
@@ -49,55 +33,32 @@ func login(ctx *fiber.Ctx) error {
 
 func register(ctx *fiber.Ctx) error {
 
-	var todoBody UserModel
+	var authBody RegisterRequest
 
-	err := ctx.BodyParser(&todoBody)
+	ctx.BodyParser(&authBody)
 
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Failed to parse body",
-			})
-	}
+	if errors := registerValidator(authBody); errors != nil {
 
-	var errors []string
-
-	if todoBody.Email == "" {
-		errors = append(errors, "Email is required")
-
-	}
-	if todoBody.Username == "" {
-		errors = append(errors, "username is required")
-	}
-	if todoBody.FullName == "" {
-		errors = append(errors, "Fullname is required")
-	}
-	if todoBody.Password == "" {
-		errors = append(errors, "Password is required")
-	}
-
-	if len(errors) > 0 {
 		return ctx.Status(fiber.StatusBadRequest).JSON(
 			fiber.Map{
 				"message": "Validation failed",
 				"errors":  errors,
-				"body":    todoBody,
 			})
 	}
 
 	newUser := UserModel{
-		Username: todoBody.Username,
-		Email:    todoBody.Email,
-		FullName: todoBody.FullName,
-		Password: todoBody.Password,
+		Username: authBody.Username,
+		Email:    authBody.Email,
+		FullName: authBody.FullName,
+		Password: authBody.Password,
 	}
 
-	usr, err2 := create(newUser)
+	usr, err := create(newUser)
 
-	if err2 != nil {
-		return ctx.Status(err2.Code).JSON(
+	if err != nil {
+		return ctx.Status(err.Code).JSON(
 			fiber.Map{
-				"message": err2.Error(),
+				"message": err.Error(),
 			})
 	}
 	return ctx.Status(fiber.StatusCreated).JSON(RegisterResponse{

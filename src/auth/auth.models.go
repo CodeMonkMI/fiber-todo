@@ -22,3 +22,15 @@ type RegisterResponse struct {
 	Email    string `json:"email" gorm:"unique"`
 	FullName string `json:"fullname"`
 }
+
+type RegisterRequest struct {
+	Username string `json:"username" gorm:"unique" validate:"required,min=3,max=50"`
+	Password string `json:"password" validate:"required,min=6"`
+	Email    string `json:"email" gorm:"unique" validate:"required,email"`
+	FullName string `json:"fullname" validate:"required"`
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" gorm:"unique" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
