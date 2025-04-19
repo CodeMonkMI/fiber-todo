@@ -15,3 +15,12 @@ type TodoModel struct {
 	Completed bool           `json:"completed"`
 	CreatedBy uint           `json:"created_by"`
 }
+type TodoCreateRequest struct {
+	Title     string `validate:"required,min=4"`
+	Completed bool
+}
+
+type TodoUpdateRequest struct {
+	Title     string `validate:"required,min=4"`
+	Completed bool
+}

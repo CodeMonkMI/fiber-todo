@@ -48,22 +48,16 @@ func single(ctx *fiber.Ctx) error {
 }
 func createTodo(ctx *fiber.Ctx) error {
 
-	var todoBody TodoModel
+	var todoBody TodoCreateRequest
+	ctx.BodyParser(&todoBody)
 
-	err := ctx.BodyParser(&todoBody)
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Failed to parse body",
-			})
+	if errors := todoCreateValidator(todoBody); errors != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Validation failed",
+			"errors":  errors,
+		})
 	}
 
-	if todoBody.Title == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Title is required",
-			})
-	}
 	user := ctx.Locals("user").(auth.UserModel)
 	todoData := TodoModel{
 		Title:     todoBody.Title,
@@ -83,46 +77,17 @@ func createTodo(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(newTodData)
 }
 func updateTodo(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
-	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Invalid user id",
-			})
-	}
+	id, _ := ctx.ParamsInt("id")
 
-	var todoBody TodoModel
-	err2 := ctx.BodyParser(&todoBody)
-
-	if err2 != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Failed to parse body",
-			})
-	}
-
-	if todoBody.Title == "" {
-		return ctx.Status(fiber.StatusBadRequest).JSON(
-			fiber.Map{
-				"message": "Title is required",
-			})
-	}
-
-	todoData1, err4 := findById(uint(id))
-	if err4 != nil {
-		return ctx.Status(err4.Code).JSON(
-			fiber.Map{
-				"message": err2.Error(),
-			})
-	}
+	var todoBody TodoUpdateRequest
+	ctx.BodyParser(&todoBody)
 
 	user := ctx.Locals("user").(auth.UserModel)
-	if todoData1.CreatedBy != user.ID {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(
-			fiber.Map{
-				"message": "You are not authorized!",
-			})
-
+	if errors := todoUpdateValidator(todoBody, int(id), user.ID); errors != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Validation failed",
+			"errors":  errors,
+		})
 	}
 
 	todoData := TodoModel{
