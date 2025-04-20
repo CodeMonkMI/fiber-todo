@@ -6,9 +6,9 @@ import (
 
 var validate = validator.New()
 
-func ValidateStruct(data interface{}) []string {
+func ValidateStruct(rules interface{}) []string {
 	var errors []string
-	err := validate.Struct(data)
+	err := validate.Struct(rules)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			errors = append(errors, formateValidationError(err))
