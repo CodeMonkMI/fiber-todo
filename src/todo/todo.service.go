@@ -38,7 +38,7 @@ func create(data TodoModel) (TodoModel, *fiber.Error) {
 }
 
 func update(id uint, data TodoModel) (TodoModel, *fiber.Error) {
-	result := db.Model(&TodoModel{}).Where("id = ?", id).Updates(data)
+	result := db.Model(&TodoModel{}).Where("id = ?", id).Select("title", "completed", "color").Updates(data)
 	if result.Error != nil {
 		return TodoModel{}, fiber.NewError(fiber.StatusBadRequest, result.Error.Error())
 	}

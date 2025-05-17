@@ -93,6 +93,7 @@ func updateTodo(ctx *fiber.Ctx) error {
 	todoData := TodoModel{
 		Title:     todoBody.Title,
 		Completed: todoBody.Completed,
+		Color:     todoBody.Color,
 	}
 
 	todo, err3 := update(uint(id), todoData)
